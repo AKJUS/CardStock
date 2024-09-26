@@ -25,6 +25,7 @@ import queue
 import sanitizer
 from enum import Enum
 import simpleaudio
+import tones
 import consoleWindow
 
 try:
@@ -83,6 +84,7 @@ class Runner():
         self.lastCard = None
         self.stopHandlingMouseEvent = False
         self.shouldUpdateVars = False
+        self.tonePlayers = {}
 
         self.stackSetupValue = None
         self.stackReturnQueue = queue.Queue()
@@ -122,6 +124,9 @@ class Runner():
             "open_url": self.open_url,
             "request_url": self.request_url,
             "play_sound": self.play_sound,
+            "play_tone": self.play_tone,
+            "play_note": self.play_note,
+            "play_notes": self.play_notes,
             "stop_sound": self.stop_sound,
             "is_key_pressed": self.is_key_pressed,
             "is_mouse_pressed": self.is_mouse_pressed,
@@ -1032,7 +1037,82 @@ class Runner():
                 f(response.status_code, response.text)
             CodeRunnerThread(target=do_request).start()
 
-    def play_sound(self, filepath):
+    def play_tone(self, frequency, duration, wait=False):
+        if not isinstance(frequency, (int, float)):
+            raise TypeError('play_tone(): frequency must be a number')
+        if not isinstance(duration, (int, float)) or duration > 60:
+            raise ValueError('play_tone(): duration must be a number less than 60 (one minute)')
+
+        filepath = f"::TONE::{frequency}::{duration}"
+
+        if frequency in self.tonePlayers:
+            self.tonePlayers[frequency].stop()
+            del self.tonePlayers[frequency]
+
+        if duration <= 0:
+            return
+
+        if filepath in self.soundCache:
+            s = self.soundCache[filepath]
+        else:
+            b = tones.get_tone_data(frequency, duration)
+            s = simpleaudio.WaveObject(b, 1, 2, 44100)
+            self.soundCache[filepath] = s
+        if s:
+            p = s.play()
+            self.tonePlayers[frequency] = p
+            if wait:
+                p.wait_done()
+                del self.tonePlayers[frequency]
+
+
+    def play_note(self, note, duration, wait=False):
+        if not isinstance(note, str) or not re.match(r'[a-gA-G]#?[1-6]*', note):
+            raise TypeError('play_note(): note must be a note name of the format "<Note letter>" optionally followed '
+                            'by a "#" and optional octave number 1-6.  For example: "A", "C#", "D2", or "F#3".')
+        if not isinstance(duration, (int, float)) or duration > 60:
+            raise ValueError('play_note(): duration must be a number less than 60 (one minute)')
+
+        self.play_tone(tones.note_frequency(note), duration, wait)
+
+    def play_notes(self, notes, tempo, wait=False):
+        if not isinstance(notes, str):
+            raise TypeError('play_notes(): notes must be a string of note names, separated by spaces, each of the format "<Note letter>" optionally followed '
+                            'by a "#" and optional octave number 1-6.  Each note name can also be followed by an optional note length after a "/" character.  '
+                            'For example: "A3/8 C#3/2" would play an eighth note at A3 followed by a half note at C#3.  Notes are quarter notes by default.')
+        if not isinstance(tempo, (int, float)):
+            raise ValueError('play_notes(): tempo must be a number')
+
+        def play_remaining_notes(note_list):
+            if len(note_list) == 0:
+                return
+
+            note = note_list[0]
+
+            if "/" in note:
+                n, b = note.split("/")
+                b = int(b)
+            else:
+                n = note
+                b = 4  # Default to 1/4 note
+
+            # get duration in seconds of this note
+            # 60 s/min * 2 half_notes/whole / tempo / fraction_of_beat
+            d = 60.0 * 2 / tempo / b
+
+            if n.upper() != "R":
+                self.play_note(n, d * 0.95)
+
+            note_list = note_list[1:]
+            if wait:
+                self.wait(d)
+                play_remaining_notes(note_list)
+            else:
+                self.run_after_delay(d, lambda nl=note_list: play_remaining_notes(nl))
+
+        play_remaining_notes(notes.split(" "))
+
+    def play_sound(self, filepath, wait=False):
         if not isinstance(filepath, str):
             raise TypeError("play_sound(): filepath must be a string")
 
@@ -1065,7 +1145,9 @@ class Runner():
                 raise ValueError("play_sound(): Couldn't read audio file at '" + filepath + "'")
 
         if s:
-            s.play()
+            p = s.play()
+            if wait:
+                p.wait_done()
 
     def stop_sound(self):
         simpleaudio.stop_all()

@@ -162,9 +162,40 @@ class HelpDataGlobals():
                                 "# Request the text from a URL, with parameters, and wait until we get it back<br/>"
                                 "jokeJson = request_url(\"https://geek-jokes.sameerkumar.website/api\", params={\"format\": \"json\"})"},
         "play_sound": {"args": {"file": {"type": "string",
-                                         "info": "This is the filename of the .wav format audio file to play, relative to where the stack file lives."}},
+                                         "info": "This is the filename of the .wav format audio file to play, relative to where the stack file lives."},
+                                "wait": {"type": "bool",
+                                         "info": "Optional parameter.  If set to True, this call won't return until the sound is done playing.  Defaults to False, returning immediately."}},
                        "return": None,
                        "info": "Starts playing the .wav formatted sound file at location <b>file</b>."},
+        "play_tone": {"args": {"frequency": {"type": "float",
+                                         "info": "The frequency of the tone to play in Hz."},
+                               "duration": {"type": "float",
+                                              "info": "The number of seconds to play this tone, or 0 to stop it."},
+                               "wait": {"type": "bool",
+                                        "info": "Optional parameter.  If set to True, this call won't return until the tone is done playing.  Defaults to False, returning immediately."}},
+                       "return": None,
+                       "info": "Starts playing the tone at the given <b>frequency</b>, for the given <b>duration</b>."},
+        "play_note": {"args": {"note": {"type": "string",
+                                         "info": "The name of the note to play.  Note names use the format: \"Note letter\", "
+                                                 "followed by an optional # for sharp, followed by an optional octave number.  "
+                                                 "For example: \"A\", \"C#\", \"D2\", or \"F#3\"."},
+                               "duration": {"type": "float",
+                                              "info": "The number of seconds to play this note, or 0 to stop it."},
+                               "wait": {"type": "bool",
+                                        "info": "Optional parameter.  If set to True, this call won't return until the note is done playing.  Defaults to False, returning immediately."}},
+                      "return": None,
+                       "info": "Starts playing the tone at the given <b>frequency</b>, for the given <b>duration</b>."},
+        "play_notes": {"args": {"notes": {"type": "string",
+                                          "info": 'notes must be a string of note names, separated by spaces, each of the format "Note letter" optionally followed '
+                                                  'by a "#" and optional octave number 1-6.  Each note name can also be followed by an optional note length after a "/" character.  '
+                                                  'For example: "A3/8 C#3/2" would play an eighth note at A3 followed by a half note at C#3.  To include a rest, use the non-note '
+                                                  'name "R", for example "R/4" for a quarter note rest.  Notes are quarter notes by default.'},
+                                "tempo": {"type": "float",
+                                          "info": "The tempo to play back these notes, in beats per minute, assuming each half note is one beat."},
+                                "wait": {"type": "bool",
+                                         "info": "Optional parameter.  If set to True, this call won't return until the notes are done playing.  Defaults to False, returning immediately."}},
+                       "return": None,
+                       "info": "Starts playing the string of <b>notes</b>, at the given <b>tempo</b>."},
         "stop_sound": {"args": {},
                        "return": None,
                        "info": "Stops all currently playing sounds."},
@@ -518,7 +549,9 @@ class HelpDataButton():
         "is_selected": {"type": "bool",
                         "info": "For Border and Borderless style buttons, this is always False.  For Checkbox style "
                                 "buttons, this is True when the Checkbox is checked.  For Radio buttons, this is True "
-                                "when this Radio button is the selected button in its group."}
+                                "when this Radio button is the selected button in its group."},
+        "is_pressed": {"type": "bool",
+                        "info": "This is True while the button is actively being pressed by the mouse / touch screen."}
     }
 
     methods = {

@@ -122,7 +122,7 @@ with a Border, a Borderless button, a Checkbox, or a Radio button.
 </p>
 <p>The next six tools are the drawing tools, which let you draw with a pen, drag out an oval, a rectangle, a 
 rounded rectangle, a polygon, or a line.  While creating a shape, you can hold down the Shift key to constrain ovals 
-and rectangles to being circles and squares, and to make new lines stay perfectly horizontal, vertical, or 45° 
+and rectangles to being circles and squares, and to make new lines stay perfectly horizontal, vertical, or 45 degrees 
 diagonal. After creating an object, CardStock will switch back to the Hand tool.  Pressing Escape in the Designer will 
 also always return you to the Hand tool.</p>
  
@@ -323,8 +323,7 @@ you can open the All Code window from the Help menu.  Clicking a line in the All
 line of that object's event code in the code editor.  (This feature is not currently available on cardstock.run.)</p>
 
 <p>Note that CardStock has a full Find and Replace system, that lets you find, and optionally replace, strings in your
-code and properties throughout your whole stack.  It allows finding using python style regular expression syntax, if you
-want to use that to search for more complex expressions.</p>
+code and properties throughout your whole stack.</p>
 
 <br/><br/>
 
