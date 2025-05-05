@@ -4,3 +4,4 @@ PyInstaller==5.13.2
 requests
 simpleaudio @ git+https://github.com/cexen/py-simple-audio.git
 streamp3
+setuptools>=78.1.1 # not directly required, pinned by Snyk to avoid a vulnerability
